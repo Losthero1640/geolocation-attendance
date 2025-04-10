@@ -3,6 +3,8 @@ let userMarker;
 let hostelMarker;
 let updateInterval;
 let checkInterval;
+let retryCount = 0;
+const MAX_RETRIES = 3; 
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
@@ -40,8 +42,20 @@ function startTracking() {
 function checkLocation() {
     navigator.geolocation.getCurrentPosition(
         updateLocation,
-        showError,
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        (error) => {
+            if (error.code === error.TIMEOUT && retryCount < MAX_RETRIES) {
+                retryCount++;
+                setTimeout(checkLocation, 2000); // Retry after 2 seconds
+            } else {
+                showError(error);
+                retryCount = 0;
+            }
+        },
+        { 
+            enableHighAccuracy: true,
+            timeout: 10000,  // 10 seconds timeout
+            maximumAge: 0
+        }
     );
 }
 

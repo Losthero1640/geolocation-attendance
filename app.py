@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Configure your hostel coordinates here
 HOSTEL_LOCATION = (21.4999,83.8992)  # Example: Delhi coordinates
-ALERT_RADIUS = 100  # meters - consider this the hostel premises
+ALERT_RADIUS = 10  # meters - consider this the hostel premises
 
 # Database setup
 def init_db():
