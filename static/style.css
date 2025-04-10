@@ -1,0 +1,38 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#map-container {
+    height: 400px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.user-marker {
+    color: #007bff;
+    font-size: 24px;
+    text-align: center;
+}
+
+.user-marker.in-hostel {
+    color: #28a745;
+}
+
+.user-marker.out-hostel {
+    color: #dc3545;
+}
+
+.hostel-marker {
+    color: #6c757d;
+    font-size: 24px;
+    text-align: center;
+}
+
+.leaflet-popup-content {
+    text-align: center;
+    font-weight: bold;
+}
