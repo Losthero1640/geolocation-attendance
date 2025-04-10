@@ -6,46 +6,39 @@ let checkInterval;
 let retryCount = 0;
 const MAX_RETRIES = 3; 
 
-// Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initMap();
     startTracking();
     
-    // Handle interval changes
     document.getElementById('update-interval').addEventListener('change', function() {
         clearInterval(checkInterval);
         startTracking();
     });
 });
 
-// Initialize the map
 function initMap() {
-    map = L.map('map-container').setView([20.5937, 78.9629], 5); // Default to India view
+    map = L.map('map-container').setView([20.5937, 78.9629], 5);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 }
 
-// Start tracking location
 function startTracking() {
     const interval = document.getElementById('update-interval').value * 1000;
     
-    // Initial check
     checkLocation();
     
-    // Set up periodic checking
     checkInterval = setInterval(checkLocation, interval);
 }
 
-// Check current location
 function checkLocation() {
     navigator.geolocation.getCurrentPosition(
         updateLocation,
         (error) => {
             if (error.code === error.TIMEOUT && retryCount < MAX_RETRIES) {
                 retryCount++;
-                setTimeout(checkLocation, 2000); // Retry after 2 seconds
+                setTimeout(checkLocation, 2000); 
             } else {
                 showError(error);
                 retryCount = 0;
@@ -53,13 +46,12 @@ function checkLocation() {
         },
         { 
             enableHighAccuracy: true,
-            timeout: 10000,  // 10 seconds timeout
+            timeout: 10000, 
             maximumAge: 0
         }
     );
 }
 
-// Update location information
 function updateLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
@@ -72,7 +64,6 @@ function updateLocation(position) {
                 throw new Error(data.message);
             }
             
-            // Update the UI
             document.getElementById('status').classList.add('d-none');
             document.getElementById('location-data').classList.remove('d-none');
             
@@ -83,28 +74,21 @@ function updateLocation(position) {
             document.getElementById('distance').textContent = 
                 `${data.distance.toFixed(2)} meters`;
             
-            // Update status
             const statusElement = document.getElementById('location-status');
             if (data.is_in_hostel) {
                 statusElement.innerHTML = '<span class="badge bg-success">Inside Hostel Premises</span>';
             } else {
                 statusElement.innerHTML = '<span class="badge bg-danger">Outside Hostel Premises</span>';
-                // Only alert if this is a new status change
                 if (!statusElement.dataset.lastStatus || statusElement.dataset.lastStatus === 'inside') {
                     alert(`You're ${data.distance.toFixed(2)} meters away from hostel!`);
                 }
             }
             statusElement.dataset.lastStatus = data.is_in_hostel ? 'inside' : 'outside';
-            
-            // Update the map
             updateMap(data.current_location, data.hostel_location, data.is_in_hostel);
-            // Add this to the updateLocation function, after updating the map
 if (data.is_in_hostel) {
-    // Check if we need to mark attendance
     if (!localStorage.getItem('lastAttendanceMarked') || 
         new Date() - new Date(localStorage.getItem('lastAttendanceMarked')) > 24*60*60*1000) {
         
-        // Additional check with server to prevent duplicate marking
         fetch('/check_attendance_status')
             .then(response => response.json())
             .then(attendanceData => {
@@ -115,7 +99,6 @@ if (data.is_in_hostel) {
             });
     }
 }
-// Add to the updateLocation function
 fetch('/attendance_data')
     .then(response => response.json())
     .then(data => {
@@ -150,17 +133,13 @@ fetch('/attendance_data')
         });
 }
 
-// Update the map with current and hostel locations
 function updateMap(currentLoc, hostelLoc, isInHostel) {
-    // Set the view to include both points
     const bounds = L.latLngBounds([currentLoc, hostelLoc]);
     map.fitBounds(bounds.pad(0.5));
     
-    // Remove existing markers
     if (userMarker) map.removeLayer(userMarker);
     if (hostelMarker) map.removeLayer(hostelMarker);
     
-    // Add new markers
     userMarker = L.marker(currentLoc, {
         title: "Your Location",
         icon: L.divIcon({
@@ -178,8 +157,7 @@ function updateMap(currentLoc, hostelLoc, isInHostel) {
             iconSize: [30, 30]
         })
     }).addTo(map).bindPopup("Hostel location");
-    
-    // Add line between points
+
     L.polyline([currentLoc, hostelLoc], {
         color: isInHostel ? 'green' : 'red',
         weight: 2,
@@ -187,7 +165,6 @@ function updateMap(currentLoc, hostelLoc, isInHostel) {
     }).addTo(map);
 }
 
-// Handle geolocation errors
 function showError(error) {
     const statusElement = document.getElementById('status');
     let message = '';

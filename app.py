@@ -6,11 +6,10 @@ import os
 
 app = Flask(__name__)
 
-# Configure your hostel coordinates here
-HOSTEL_LOCATION = (21.4999,83.8992)  # Example: Delhi coordinates
-ALERT_RADIUS = 10  # meters - consider this the hostel premises
 
-# Database setup
+HOSTEL_LOCATION = (21.4999,83.8992) 
+ALERT_RADIUS = 10 
+
 def init_db():
     if not os.path.exists('attendance.db'):
         conn = sqlite3.connect('attendance.db')
@@ -20,7 +19,7 @@ def init_db():
                       user_id TEXT,
                       entry_time DATETIME,
                       exit_time DATETIME,
-                      duration INTEGER)''')  # duration in seconds
+                      duration INTEGER)''')  
         conn.commit()
         conn.close()
 
@@ -36,7 +35,6 @@ def check_location(lat, lon):
         current_loc = (float(lat), float(lon))
         distance = geodesic(current_loc, HOSTEL_LOCATION).meters
         
-        # Check if user entered or exited the premises
         check_attendance(current_loc, distance, request.remote_addr)
         
         return jsonify({
@@ -57,7 +55,6 @@ def check_attendance_status():
     conn = sqlite3.connect('attendance.db')
     c = conn.cursor()
     
-    # Check if attendance was already marked today
     today = datetime.now().strftime('%Y-%m-%d')
     c.execute("SELECT COUNT(*) FROM attendance WHERE user_id = ? AND date(entry_time) = ?", 
              (user_id, today))
@@ -70,20 +67,19 @@ def check_attendance(current_loc, distance, user_id):
     conn = sqlite3.connect('attendance.db')
     c = conn.cursor()
     
-    # Check if user has an open session (entered but not exited)
     c.execute("SELECT id, entry_time FROM attendance WHERE user_id = ? AND exit_time IS NULL ORDER BY id DESC LIMIT 1", (user_id,))
     record = c.fetchone()
     
     now = datetime.now()
     
-    if distance <= ALERT_RADIUS:  # Inside premises
-        if not record:  # New entry
+    if distance <= ALERT_RADIUS:
+        if not record: 
             c.execute("INSERT INTO attendance (user_id, entry_time) VALUES (?, ?)", 
                      (user_id, now))
             conn.commit()
             print(f"Attendance marked for {user_id} at {now}")
-    else:  # Outside premises
-        if record:  # Need to close the session
+    else: 
+        if record:
             entry_time = datetime.strptime(record[1], '%Y-%m-%d %H:%M:%S.%f')
             duration = (now - entry_time).total_seconds()
             c.execute("UPDATE attendance SET exit_time = ?, duration = ? WHERE id = ?", 
