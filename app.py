@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 
-HOSTEL_LOCATION = (21.4999,83.8992) 
+HOSTEL_LOCATION = (21.498221,83.904285) 
 ALERT_RADIUS = 10 
 
 def init_db():
